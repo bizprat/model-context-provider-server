@@ -20,6 +20,7 @@ const server = new McpServer({
 // Tools
 server.tool(
   'add-todo',
+  'Adds new todo',
   { text: z.string() },
   async ({ text }) => {
     const todo = addTodo(text);
@@ -35,36 +36,45 @@ server.tool(
   }
 );
 
-server.tool('get-todos', {}, async () => {
-  const todos = getTodos();
+server.tool(
+  'get-todos',
+  'Lists all ToDos',
+  {},
+  async () => {
+    const todos = getTodos();
 
-  if (todos.length === 0)
+    if (todos.length === 0)
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'You have no To Do items.',
+          },
+        ],
+      };
+
+    const todoList = todos
+      .map(
+        (todo) =>
+          `- ${todo.id}: ${todo.text} - ${
+            todo.completed ? 'Completed' : 'Not Completed'
+          }`
+      )
+      .join('\n');
     return {
       content: [
-        { type: 'text', text: 'You have no To Do items.' },
+        {
+          type: 'text',
+          text: `You have ${todos.length} To Do item(s):\n${todoList}`,
+        },
       ],
     };
-
-  const todoList = todos
-    .map(
-      (todo) =>
-        `- ${todo.id}: ${todo.text} - ${
-          todo.completed ? 'Completed' : 'Not Completed'
-        }`
-    )
-    .join('\n');
-  return {
-    content: [
-      {
-        type: 'text',
-        text: `You have ${todos.length} To Do item(s):\n${todoList}`,
-      },
-    ],
-  };
-});
+  }
+);
 
 server.tool(
   'complete-todo',
+  'Mark ToDo as complete',
   { id: z.number() },
   async ({ id }) => {
     const todo = getTodoById(id);
@@ -95,6 +105,7 @@ server.tool(
 
 server.tool(
   'delete-todo',
+  'Deletes ToDo',
   { id: z.number() },
   async ({ id }) => {
     const success = deleteTodo(id);
